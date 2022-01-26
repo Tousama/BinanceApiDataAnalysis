@@ -66,3 +66,35 @@ def ema(data, num):
     else:
         ema = data[-1]* k + ema * (1-k)
     return ema
+
+
+# =============================================================================
+# Function of MACD signal
+# =============================================================================
+def MACD(data):
+    """
+
+
+    Parameters
+    ----------
+    data : Data for calculate Macd
+    
+    Returns
+    -------
+    macdIndicator : signal of Macd
+
+    """
+    closeVal = pd.DataFrame(data)
+    ema12 = closeVal.ewm(span=12).mean()
+    ema26 = closeVal.ewm(span=26).mean()
+    macd = ema12 - ema26
+    signal = macd.ewm(span=9).mean()
+    macd = macd.values.tolist()
+    signal = signal.values.tolist()
+    if macd[-1] > signal[-1] and macd[-2] < signal[-2]:
+        macdIndicator = 'BUY'
+    elif macd[-1] < signal[-1] and macd[-2] > signal[-2]:
+        macdIndicator = 'SELL'
+    else:
+        macdIndicator = 'HOLD'
+    return macdIndicator
