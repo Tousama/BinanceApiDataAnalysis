@@ -24,4 +24,45 @@ client = Client(APIKEY, APISECRET)
 # =============================================================================
 # Obtain cryptocurrencies symbol and price list
 # =============================================================================
-info = client.get_all_tickers() 
+info = client.get_all_tickers()
+crypto_symbol_list=[]
+for i in range(len(info)):
+    crypto_symbol_list.append(info[i]['symbol'])
+
+# =============================================================================
+# Obtain historical price data of cryptocurrencies
+# =============================================================================
+price={}
+for i in range(len(crypto_symbol_list)):
+    klines=client.get_klines(symbol=crypto_symbol_list[i],
+                             interval="1d", limit="365")
+    end_price=[float(entry[4]) for entry in klines]
+    #Reverse the price list. The list starts to past, finish to present data. 
+    end_price=end_price[::-1]
+    price[crypto_symbol_list[i]]=end_price
+    
+
+# =============================================================================
+# Function of Exponential Moving Avarage
+# =============================================================================
+def ema(data, num):
+    """
+
+    Parameters
+    ----------
+    data : Data for calculate Ema
+    num : Number of Ema's period 
+
+    Returns
+    -------
+    ema : Exponential moving avarage
+
+    """
+    ema=0
+    k = 2 / (num+1)
+    if ema == 0:
+        first_ema = sum(data[-num : -1]) / (num-1)
+        ema = data[-1] * k + first_ema * (1-k)
+    else:
+        ema = data[-1]* k + ema * (1-k)
+    return ema
